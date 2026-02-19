@@ -5,7 +5,9 @@ description = "Explainable Medical Classifier using MedMNIST"
 authors = [
     {name = "Almouhannad Hafez", email = "almouhannad.hafez@gmail.com"}
 ]
-dependencies = []
+dependencies = [
+    "PyYAML>=6.0",
+]
 
 [tool.ruff]
 
