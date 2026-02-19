@@ -1,0 +1,16 @@
+[project]
+name = "xaimed"
+version = "0.1.0"
+description = "Explainable Medical Classifier using MedMNIST"
+authors = [
+    {name = "Almouhannad Hafez", email = "almouhannad.hafez@gmail.com"}
+]
+dependencies = []
+
+[tool.ruff]
+
+[tool.black]
+
+[tool.mypy]
+
+[tool.pytest.ini_options]

@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Hafez"
+  given-names: "Almouhannad"
+title: "Explainable Medical Classifier (XAI-first)"
+version: 0.1.0
+date-released: 2026-02-19
+url: "https://github.com/Almouhannad/xai-med-classifier"
