@@ -43,6 +43,19 @@ You can also download data via the CLI module:
 python -m xaimed.cli download-data --dataset pathmnist --data-dir data
 ```
 
+## Model Factory
+
+Model construction is centralized in `src/xaimed/models/factory.py` via `build_model(...)`.
+
+Current support:
+- `resnet18`
+- `resnet34`
+- `resnet50`
+- `resnet101`
+
+The factory automatically replaces the classifier head to match `num_classes` and can adapt the first convolution for non-RGB inputs (`in_channels != 3`).
+
+
 ## Project Overview
 
 This repository provides a standardized workflow for:
