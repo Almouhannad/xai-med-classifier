@@ -66,7 +66,7 @@ def _install_fake_dependencies(monkeypatch):
         def __call__(self, value):
             return value
 
-    fake_transforms.Compose = lambda steps: _Identity()
+    fake_transforms.Compose = lambda _steps: _Identity()
     fake_transforms.Resize = lambda size: ("resize", size)
     fake_transforms.ToTensor = lambda: "tensor"
     fake_transforms.Normalize = lambda mean, std: ("norm", mean, std)

@@ -12,6 +12,8 @@ import torch
 import torch.nn as nn
 from torchvision import models
 
+from xaimed.models.heads import build_classification_head
+
 
 class ModelFactoryError(ValueError):
     """Raised when an unsupported model configuration is requested."""
@@ -124,11 +126,7 @@ def _replace_classifier(model: nn.Module, num_classes: int, dropout: float) -> N
     if not isinstance(fc_layer, nn.Linear):
         raise ModelFactoryError("Cannot replace classifier: fc is not a Linear layer.")
 
-    in_features = fc_layer.in_features
-    if dropout > 0:
-        model.fc = nn.Sequential(nn.Dropout(p=dropout), nn.Linear(in_features, num_classes))
-    else:
-        model.fc = nn.Linear(in_features, num_classes)
+    model.fc = build_classification_head(fc_layer.in_features, num_classes, dropout)
 
 
 def build_model(

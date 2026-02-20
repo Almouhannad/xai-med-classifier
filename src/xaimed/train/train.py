@@ -14,6 +14,7 @@ from torchvision.transforms import Compose, Normalize, Resize, ToTensor
 
 from xaimed.data.medmnist import build_medmnist_dataloaders
 from xaimed.models.factory import build_model
+from xaimed.seed import set_global_seed
 from xaimed.train.loops import format_epoch_metrics, train_one_epoch, validate_one_epoch
 
 
@@ -111,6 +112,9 @@ def run_training(config: dict[str, Any]) -> TrainResult:
     """Train a model using modular epoch loops and save checkpoints."""
     train_cfg = config.get("train", {})
     model_cfg = config.get("model", {})
+
+    seed = int(config.get("seed", 42))
+    set_global_seed(seed)
 
     device = torch.device(str(train_cfg.get("device", "cpu")))
     dataloaders = build_dataloaders_from_config(config)

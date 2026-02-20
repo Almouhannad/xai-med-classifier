@@ -8,7 +8,7 @@ from pathlib import Path
 
 import torch
 
-from xaimed.eval.error_analysis import select_failure_gallery_indices
+from xaimed.eval.error_analysis import collect_misclassified_indices, select_failure_gallery_indices
 from xaimed.utils.viz import save_image_grid
 
 
@@ -74,6 +74,8 @@ def build_failure_gallery(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    mismatched_indices = collect_misclassified_indices(targets, predictions)
+
     high_conf_wrong, low_conf_correct = select_failure_gallery_indices(
         targets=targets,
         predictions=predictions,
@@ -84,6 +86,9 @@ def build_failure_gallery(
     csv_path = output_dir / "failure_gallery_selection.csv"
     high_conf_wrong_grid_path = output_dir / "high_confidence_wrongs_grid.png"
     low_conf_correct_grid_path = output_dir / "low_confidence_corrects_grid.png"
+
+    if set(high_conf_wrong) - set(mismatched_indices):
+        raise ValueError("High-confidence wrong selections must be misclassified samples.")
 
     _write_failure_gallery_csv(
         csv_path,

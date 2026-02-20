@@ -11,7 +11,9 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
+from xaimed.eval.calibration import expected_calibration_error
 from xaimed.models.factory import build_model
+from xaimed.seed import set_global_seed
 from xaimed.reporting.make_failure_gallery import FailureGalleryArtifacts, build_failure_gallery
 from xaimed.train.loops import _prepare_batch
 from xaimed.train.train import build_dataloaders_from_config
@@ -77,6 +79,9 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
     train_cfg = config.get("train", {})
     eval_cfg = config.get("eval", {})
 
+    seed = int(config.get("seed", 42))
+    set_global_seed(seed)
+
     device = torch.device(str(eval_cfg.get("device", train_cfg.get("device", "cpu"))))
     num_classes = int(model_cfg.get("num_classes", 2))
 
@@ -109,6 +114,7 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
         "num_samples": int(targets.numel()),
         "accuracy": accuracy_from_predictions(targets, predictions),
         "macro_f1": macro_f1_from_confusion_matrix(matrix),
+        "ece": expected_calibration_error(confidences, predictions == targets),
     }
 
     output_dir = Path(str(eval_cfg.get("output_dir", "artifacts/eval")))

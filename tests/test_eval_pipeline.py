@@ -50,3 +50,4 @@ def test_run_evaluation_writes_metrics_and_confusion_matrix(tmp_path, monkeypatc
     assert metrics["num_samples"] == 6
     assert 0.0 <= metrics["accuracy"] <= 1.0
     assert 0.0 <= metrics["macro_f1"] <= 1.0
+    assert 0.0 <= metrics["ece"] <= 1.0

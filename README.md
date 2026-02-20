@@ -80,7 +80,7 @@ For weights, `build_model(...)` supports either `pretrained=True` (uses torchvis
 Training is implemented in modular loops under `src/xaimed/train/`:
 
 - `train_one_epoch(...)` and `validate_one_epoch(...)` encapsulate per-epoch logic.
-- `run_training(...)` coordinates model/optimizer setup, loop execution, and checkpoint writing.
+- `run_training(...)` coordinates seed setup, model/optimizer wiring, loop execution, and checkpoint writing.
 
 Checkpoints are saved as:
 
@@ -99,7 +99,7 @@ python -m xaimed.cli --config configs/experiments/quick_smoke.yaml eval
 ```
 
 Outputs are written under the configured `eval.output_dir` and include:
-- `metrics.json` with `accuracy`, `macro_f1`, sample count, and split.
+- `metrics.json` with `accuracy`, `macro_f1`, `ece`, sample count, and split.
 - `confusion_matrix.png` containing an annotated confusion matrix heatmap.
 - `failure_gallery_selection.csv` with two ranked groups: high-confidence wrong predictions and low-confidence correct predictions.
 - `high_confidence_wrongs_grid.png` and `low_confidence_corrects_grid.png` for visual failure/success triage.
