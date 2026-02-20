@@ -47,3 +47,21 @@ def test_cli_download_data_command(monkeypatch, capsys):
     assert result == 0
     assert called == {"dataset_name": "pathmnist", "data_dir": "tmp-data"}
     assert "Downloaded 'pathmnist' into tmp-data" in out
+
+def test_cli_train_command(monkeypatch, capsys):
+    class _Result:
+        best_checkpoint_path = "best.pt"
+        last_checkpoint_path = "last.pt"
+
+    def _fake_run_training(config):
+        assert config == {"train": {"epochs": 1}}
+        return _Result()
+
+    monkeypatch.setattr("xaimed.train.run_training", _fake_run_training)
+
+    result = main(["--config", "tests/fixtures/train_config.yaml", "train"])
+
+    out = capsys.readouterr().out
+    assert result == 0
+    assert "Best checkpoint: best.pt" in out
+    assert "Last checkpoint: last.pt" in out

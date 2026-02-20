@@ -19,10 +19,10 @@ download-data:
 	PYTHONPATH=src python scripts/download_data.py --dataset pathmnist --data-dir data
 
 train-smoke:
-	python -m xaimed.cli train --config configs/experiments/quick_smoke.yaml
+	PYTHONPATH=src python -m xaimed.cli --config configs/experiments/quick_smoke.yaml train
 
 explain-smoke:
-	python -m xaimed.cli explain --config configs/experiments/quick_smoke.yaml
+	PYTHONPATH=src python -m xaimed.cli --config configs/experiments/quick_smoke.yaml explain
 
 report:
-	python -m xaimed.cli report --config configs/default.yaml
+	PYTHONPATH=src python -m xaimed.cli --config configs/default.yaml report

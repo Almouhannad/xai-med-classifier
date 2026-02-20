@@ -1,0 +1,20 @@
+model:
+  name: resnet18
+  num_classes: 2
+  in_channels: 3
+  pretrained: false
+
+train:
+  epochs: 1
+  lr: 0.001
+  weight_decay: 0.0
+  device: cpu
+  checkpoint_dir: artifacts/checkpoints/quick_smoke
+
+data:
+  use_fake_data: true
+  image_size: 64
+  batch_size: 8
+  num_workers: 0
+  train_samples: 32
+  val_samples: 16

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from typing import Sequence
+from typing import Any, Sequence
 
 from xaimed.utils.io import load_yaml_config
 
@@ -29,7 +29,17 @@ def build_parser() -> argparse.ArgumentParser:
     download_parser.add_argument("--dataset", default="pathmnist", help="MedMNIST dataset name")
     download_parser.add_argument("--data-dir", default="data", help="Output directory")
 
+    subparsers.add_parser("train", help="Train model and save checkpoints.")
+    subparsers.add_parser("explain", help="Generate explanation artifacts.")
+    subparsers.add_parser("report", help="Build report artifacts.")
+
     return parser
+
+
+def _load_config_if_needed(config_path: str | None) -> dict[str, Any]:
+    if not config_path:
+        return {}
+    return load_yaml_config(config_path)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -37,8 +47,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if args.config:
-        load_yaml_config(args.config)
+    config = _load_config_if_needed(args.config)
 
     if args.command == "download-data":
         from xaimed.data.medmnist import download_medmnist
@@ -47,6 +56,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Downloaded '{args.dataset}' into {args.data_dir}")
         for split, count in counts.items():
             print(f"  {split}: {count} samples")
+        return 0
+
+    if args.command == "train":
+        from xaimed.train import run_training
+
+        result = run_training(config)
+        print(f"Best checkpoint: {result.best_checkpoint_path}")
+        print(f"Last checkpoint: {result.last_checkpoint_path}")
+        return 0
+
+    if args.command == "explain":
+        print("Explain command is not implemented yet.")
+        return 0
+
+    if args.command == "report":
+        print("Report command is not implemented yet.")
+        return 0
 
     return 0
 

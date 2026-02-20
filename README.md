@@ -58,6 +58,21 @@ The factory automatically replaces the classifier head to match `num_classes` an
 For weights, `build_model(...)` supports either `pretrained=True` (uses torchvision `DEFAULT` weights) or an explicit `weights` argument (enum value or enum-name string such as `"DEFAULT"`). Note: when using pretrained weights, preprocessing should follow the corresponding torchvision weight transforms (`weights.transforms()`).
 
 
+
+## Training & Checkpointing
+
+Training is implemented in modular loops under `src/xaimed/train/`:
+
+- `train_one_epoch(...)` and `validate_one_epoch(...)` encapsulate per-epoch logic.
+- `run_training(...)` coordinates model/optimizer setup, loop execution, and checkpoint writing.
+
+Checkpoints are saved as:
+
+- `best.pt` (lowest validation loss)
+- `last.pt` (latest epoch)
+
+The smoke config (`configs/experiments/quick_smoke.yaml`) uses CPU + synthetic data so `make train-smoke` runs reliably in constrained environments.
+
 ## Project Overview
 
 This repository provides a standardized workflow for:
