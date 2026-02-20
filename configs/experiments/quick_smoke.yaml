@@ -18,3 +18,9 @@ data:
   num_workers: 0
   train_samples: 32
   val_samples: 16
+
+eval:
+  split: val
+  checkpoint_path: artifacts/checkpoints/quick_smoke/best.pt
+  output_dir: artifacts/eval/quick_smoke
+  device: cpu

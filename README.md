@@ -19,12 +19,17 @@ A high-performance classification pipeline for medical imaging using **MedMNIST*
    make train-smoke
    ```
 
-4. **Generate Explanations**:
+4. **Run Smoke Evaluation (metrics + confusion matrix)**:
+   ```bash
+   make eval-smoke
+   ```
+
+5. **Generate Explanations**:
    ```bash
    make explain-smoke
    ```
 
-5. **Generate Report**:
+6. **Generate Report**:
    ```bash
    make report
    ```
@@ -72,6 +77,21 @@ Checkpoints are saved as:
 - `last.pt` (latest epoch)
 
 The smoke config (`configs/experiments/quick_smoke.yaml`) uses CPU + synthetic data so `make train-smoke` runs reliably in constrained environments.
+
+
+## Evaluation
+
+Evaluation is implemented in `src/xaimed/eval/evaluate.py` and exposed through the CLI:
+
+```bash
+python -m xaimed.cli --config configs/experiments/quick_smoke.yaml eval
+```
+
+Outputs are written under the configured `eval.output_dir` and include:
+- `metrics.json` with `accuracy`, `macro_f1`, sample count, and split.
+- `confusion_matrix.png` containing an annotated confusion matrix heatmap.
+
+The smoke command `make eval-smoke` reads `configs/experiments/quick_smoke.yaml` and writes artifacts to `artifacts/eval/quick_smoke/`.
 
 ## Project Overview
 

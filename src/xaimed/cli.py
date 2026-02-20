@@ -31,6 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("train", help="Train model and save checkpoints.")
     subparsers.add_parser("explain", help="Generate explanation artifacts.")
+    subparsers.add_parser("eval", help="Evaluate a checkpoint and create confusion matrix artifacts.")
     subparsers.add_parser("report", help="Build report artifacts.")
 
     return parser
@@ -61,13 +62,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "train":
         from xaimed.train import run_training
 
-        result = run_training(config)
-        print(f"Best checkpoint: {result.best_checkpoint_path}")
-        print(f"Last checkpoint: {result.last_checkpoint_path}")
+        train_result = run_training(config)
+        print(f"Best checkpoint: {train_result.best_checkpoint_path}")
+        print(f"Last checkpoint: {train_result.last_checkpoint_path}")
         return 0
 
     if args.command == "explain":
         print("Explain command is not implemented yet.")
+        return 0
+
+    if args.command == "eval":
+        from xaimed.eval import run_evaluation
+
+        eval_result = run_evaluation(config)
+        print(f"Metrics saved: {eval_result.metrics_path}")
+        print(f"Confusion matrix saved: {eval_result.confusion_matrix_path}")
+        print(f"Accuracy: {float(eval_result.metrics["accuracy"]):.4f}")
+        print(f"Macro F1: {float(eval_result.metrics["macro_f1"]):.4f}")
         return 0
 
     if args.command == "report":

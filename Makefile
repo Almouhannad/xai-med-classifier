@@ -1,4 +1,4 @@
-.PHONY: setup lint format test download-data train-smoke explain-smoke report
+.PHONY: setup lint format test download-data train-smoke eval-smoke explain-smoke report
 
 setup:
 	pip install -e .
@@ -20,6 +20,9 @@ download-data:
 
 train-smoke:
 	PYTHONPATH=src python -m xaimed.cli --config configs/experiments/quick_smoke.yaml train
+
+eval-smoke: train-smoke
+	PYTHONPATH=src python -m xaimed.cli --config configs/experiments/quick_smoke.yaml eval
 
 explain-smoke:
 	PYTHONPATH=src python -m xaimed.cli --config configs/experiments/quick_smoke.yaml explain

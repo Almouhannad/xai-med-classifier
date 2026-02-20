@@ -29,3 +29,19 @@ Both files contain model/optimizer state dicts, epoch index, and train/validatio
 - Data mode: `use_fake_data: true`
 
 This validates the end-to-end trainer and checkpoint writing logic without requiring dataset downloads.
+
+
+## Evaluation & Confusion Matrix
+
+The evaluation pipeline is available via `xaimed eval` and `make eval-smoke`.
+
+- Loads the trained checkpoint (default: `train.checkpoint_dir/best.pt`).
+- Rebuilds the configured dataloader split (default: `val`).
+- Computes aggregate metrics (`accuracy`, `macro_f1`, `num_samples`).
+- Saves `metrics.json` and an annotated `confusion_matrix.png` in `eval.output_dir`.
+
+Smoke defaults (in `configs/experiments/quick_smoke.yaml`):
+
+- `eval.checkpoint_path: artifacts/checkpoints/quick_smoke/best.pt`
+- `eval.output_dir: artifacts/eval/quick_smoke`
+- `eval.device: cpu`

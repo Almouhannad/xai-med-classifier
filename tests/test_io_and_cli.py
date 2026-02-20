@@ -65,3 +65,24 @@ def test_cli_train_command(monkeypatch, capsys):
     assert result == 0
     assert "Best checkpoint: best.pt" in out
     assert "Last checkpoint: last.pt" in out
+
+def test_cli_eval_command(monkeypatch, capsys):
+    class _EvalResult:
+        metrics_path = "metrics.json"
+        confusion_matrix_path = "cm.png"
+        metrics = {"accuracy": 0.5, "macro_f1": 0.4}
+
+    def _fake_run_evaluation(config):
+        assert config == {"eval": {"split": "val"}}
+        return _EvalResult()
+
+    monkeypatch.setattr("xaimed.eval.run_evaluation", _fake_run_evaluation)
+
+    result = main(["--config", "tests/fixtures/eval_config.yaml", "eval"])
+
+    out = capsys.readouterr().out
+    assert result == 0
+    assert "Metrics saved: metrics.json" in out
+    assert "Confusion matrix saved: cm.png" in out
+    assert "Accuracy: 0.5000" in out
+    assert "Macro F1: 0.4000" in out
