@@ -86,3 +86,20 @@ def test_cli_eval_command(monkeypatch, capsys):
     assert "Confusion matrix saved: cm.png" in out
     assert "Accuracy: 0.5000" in out
     assert "Macro F1: 0.4000" in out
+
+
+def test_cli_report_command(monkeypatch, capsys):
+    called = {}
+
+    def _fake_build_report(output_dir):
+        called["output_dir"] = str(output_dir)
+        return "artifacts/report/README.md"
+
+    monkeypatch.setattr("xaimed.reporting.build_report", _fake_build_report)
+
+    result = main(["report"])
+
+    out = capsys.readouterr().out
+    assert result == 0
+    assert called["output_dir"] == "artifacts/report"
+    assert "Report scaffold saved: artifacts/report/README.md" in out

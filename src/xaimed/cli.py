@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 from typing import Any, Sequence
 
 from xaimed.utils.io import load_yaml_config
@@ -68,7 +69,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     if args.command == "explain":
-        print("Explain command is not implemented yet.")
+        print("Explain command is scaffolded and will be expanded in a later task.")
         return 0
 
     if args.command == "eval":
@@ -77,12 +78,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         eval_result = run_evaluation(config)
         print(f"Metrics saved: {eval_result.metrics_path}")
         print(f"Confusion matrix saved: {eval_result.confusion_matrix_path}")
-        print(f"Accuracy: {float(eval_result.metrics["accuracy"]):.4f}")
-        print(f"Macro F1: {float(eval_result.metrics["macro_f1"]):.4f}")
+        print(f"Accuracy: {float(eval_result.metrics['accuracy']):.4f}")
+        print(f"Macro F1: {float(eval_result.metrics['macro_f1']):.4f}")
         return 0
 
     if args.command == "report":
-        print("Report command is not implemented yet.")
+        from xaimed.reporting import build_report
+
+        output_dir = Path(str(config.get("report", {}).get("output_dir", "artifacts/report")))
+        report_path = build_report(output_dir)
+        print(f"Report scaffold saved: {report_path}")
         return 0
 
     return 0

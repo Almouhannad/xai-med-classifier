@@ -45,3 +45,8 @@ Smoke defaults (in `configs/experiments/quick_smoke.yaml`):
 - `eval.checkpoint_path: artifacts/checkpoints/quick_smoke/best.pt`
 - `eval.output_dir: artifacts/eval/quick_smoke`
 - `eval.device: cpu`
+
+
+## Config Coverage
+
+Both configs (`configs/default.yaml` and `configs/experiments/quick_smoke.yaml`) define `train`, `data`, `eval`, and `report` sections to keep CLI behavior consistent across full and smoke runs.

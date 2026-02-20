@@ -24,3 +24,6 @@ eval:
   checkpoint_path: artifacts/checkpoints/quick_smoke/best.pt
   output_dir: artifacts/eval/quick_smoke
   device: cpu
+
+report:
+  output_dir: artifacts/report/quick_smoke

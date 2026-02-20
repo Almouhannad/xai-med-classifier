@@ -34,6 +34,17 @@ A high-performance classification pipeline for medical imaging using **MedMNIST*
    make report
    ```
 
+
+### Script entrypoints
+
+All scripts in `scripts/` delegate to the CLI and support argument forwarding:
+
+- `python scripts/download_data.py ...`
+- `python scripts/train.py ...`
+- `python scripts/eval.py ...`
+- `python scripts/explain.py ...`
+- `python scripts/make_report.py ...`
+
 ## Data Module
 
 The MedMNIST data integration lives in `src/xaimed/data/medmnist.py` and provides:
