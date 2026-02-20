@@ -1,3 +1,7 @@
 torch
 torchvision
 medmnist
+numpy
+pandas
+matplotlib
+seaborn

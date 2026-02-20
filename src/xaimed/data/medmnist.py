@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import zipfile
 from typing import Any
 
 VALID_SPLITS = ("train", "val", "test")
@@ -10,6 +11,35 @@ VALID_SPLITS = ("train", "val", "test")
 
 class DataModuleError(RuntimeError):
     """Raised for invalid data module usage or missing dependencies."""
+
+
+def get_repo_root() -> Path:
+    """Return repository root by searching for project markers upward from this module."""
+    module_path = Path(__file__).resolve()
+    for candidate in (module_path.parent, *module_path.parents):
+        if (candidate / "pyproject.toml").exists() or (candidate / ".git").exists():
+            return candidate
+    return module_path.parent
+
+
+def resolve_data_dir(data_dir: str | Path) -> Path:
+    """Resolve data directory; relative paths are anchored at repository root."""
+    candidate = Path(data_dir)
+    if candidate.is_absolute():
+        return candidate
+    return get_repo_root() / candidate
+
+
+def _validate_archive_if_present(dataset_name: str, data_root: Path, download: bool) -> None:
+    """Detect corrupted MedMNIST archives early and return actionable guidance."""
+    archive_path = data_root / f"{dataset_name.lower()}.npz"
+    if archive_path.exists() and not zipfile.is_zipfile(archive_path):
+        suggestion = "Set download=True or remove the file and re-run to fetch a clean archive."
+        if download:
+            suggestion = "Remove the file and re-run to fetch a clean archive."
+        raise DataModuleError(
+            f"Corrupted MedMNIST archive detected at '{archive_path}'. {suggestion}"
+        )
 
 
 def _load_medmnist_class(dataset_name: str):
@@ -64,8 +94,9 @@ def load_medmnist_dataset(
         raise DataModuleError(f"Invalid split '{split}'. Expected one of: {allowed}.")
 
     dataset_class = _load_medmnist_class(dataset_name)
-    data_root = Path(data_dir)
+    data_root = resolve_data_dir(data_dir)
     data_root.mkdir(parents=True, exist_ok=True)
+    _validate_archive_if_present(dataset_name=dataset_name, data_root=data_root, download=download)
 
     return dataset_class(
         split=split,

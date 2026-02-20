@@ -8,6 +8,7 @@ from xaimed.data.medmnist import (
     build_medmnist_dataloaders,
     download_medmnist,
     load_medmnist_dataset,
+    resolve_data_dir,
 )
 
 import pytest
@@ -110,4 +111,31 @@ def test_load_medmnist_dataset_rejects_invalid_split(monkeypatch, tmp_path):
             dataset_name="pathmnist",
             split="training",
             data_dir=tmp_path,
+        )
+
+def test_resolve_data_dir_relative_anchors_to_repo_root(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    resolved = resolve_data_dir("data")
+
+    assert resolved.name == "data"
+    assert (resolved.parent / "pyproject.toml").exists()
+
+
+def test_resolve_data_dir_absolute_kept_as_is(tmp_path):
+    resolved = resolve_data_dir(tmp_path)
+
+    assert resolved == tmp_path
+
+
+def test_load_medmnist_dataset_rejects_corrupted_archive(monkeypatch, tmp_path):
+    _install_fake_dependencies(monkeypatch)
+    (tmp_path / "pathmnist.npz").write_bytes(b"not-a-zip")
+
+    with pytest.raises(DataModuleError, match="Corrupted MedMNIST archive"):
+        load_medmnist_dataset(
+            dataset_name="pathmnist",
+            split="train",
+            data_dir=tmp_path,
+            download=False,
         )
