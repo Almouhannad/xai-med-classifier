@@ -33,7 +33,7 @@ ENV/
 artifacts/*
 !artifacts/.gitkeep
 assets/samples/*
-data/
+/data/
 *.log
 
 # Notebooks

@@ -9,20 +9,39 @@ A high-performance classification pipeline for medical imaging using **MedMNIST*
    make setup
    ```
 
-2. **Run Smoke Test (Training)**:
+2. **Download Dataset**:
+   ```bash
+   python scripts/download_data.py --dataset pathmnist --data-dir data
+   ```
+
+3. **Run Smoke Test (Training)**:
    ```bash
    make train-smoke
    ```
 
-3. **Generate Explanations**:
+4. **Generate Explanations**:
    ```bash
    make explain-smoke
    ```
 
-4. **Generate Report**:
+5. **Generate Report**:
    ```bash
    make report
    ```
+
+## Data Module
+
+The MedMNIST data integration lives in `src/xaimed/data/medmnist.py` and provides:
+- `build_transforms(image_size=224)` for standard RGB resize/tensor/normalize preprocessing.
+- `load_medmnist_dataset(...)` for split-aware dataset construction.
+- `build_medmnist_dataloaders(...)` for train/val/test loaders.
+- `download_medmnist(...)` for split downloads and size reporting.
+
+You can also download data via the CLI module:
+
+```bash
+python -m xaimed.cli download-data --dataset pathmnist --data-dir data
+```
 
 ## Project Overview
 

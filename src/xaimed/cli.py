@@ -19,6 +19,16 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         help="Path to a YAML config file to load.",
     )
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    download_parser = subparsers.add_parser(
+        "download-data",
+        help="Download MedMNIST splits into a local data directory.",
+    )
+    download_parser.add_argument("--dataset", default="pathmnist", help="MedMNIST dataset name")
+    download_parser.add_argument("--data-dir", default="data", help="Output directory")
+
     return parser
 
 
@@ -29,6 +39,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.config:
         load_yaml_config(args.config)
+
+    if args.command == "download-data":
+        from xaimed.data.medmnist import download_medmnist
+
+        counts = download_medmnist(dataset_name=args.dataset, data_dir=args.data_dir)
+        print(f"Downloaded '{args.dataset}' into {args.data_dir}")
+        for split, count in counts.items():
+            print(f"  {split}: {count} samples")
 
     return 0
 
