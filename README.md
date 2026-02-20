@@ -53,7 +53,9 @@ Current support:
 - `resnet50`
 - `resnet101`
 
-The factory automatically replaces the classifier head to match `num_classes` and can adapt the first convolution for non-RGB inputs (`in_channels != 3`). During channel adaptation, conv1 weights are remapped (mean-to-1ch, slice for fewer channels, repeat for extra channels) so pretrained signal is preserved instead of reinitialized.
+The factory automatically replaces the classifier head to match `num_classes` and can adapt the first convolution for non-RGB inputs (`in_channels != 3`). During channel adaptation, conv1 weights are remapped from pretrained RGB kernels: averaged for 1-channel inputs, and repeat/truncate + scale (`3 / in_channels`) for multi-channel inputs. This preserves pretrained signal while keeping early-layer activation magnitude closer to the RGB baseline.
+
+For weights, `build_model(...)` supports either `pretrained=True` (uses torchvision `DEFAULT` weights) or an explicit `weights` argument (enum value or enum-name string such as `"DEFAULT"`). Note: when using pretrained weights, preprocessing should follow the corresponding torchvision weight transforms (`weights.transforms()`).
 
 
 ## Project Overview
