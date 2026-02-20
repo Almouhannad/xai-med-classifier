@@ -5,8 +5,10 @@ Currently supports ResNet backbones from torchvision.
 
 from __future__ import annotations
 
+import math
 from typing import Callable, cast
 
+import torch
 import torch.nn as nn
 from torchvision import models
 
@@ -32,6 +34,18 @@ def _resolve_resnet_weights(model_name: str, pretrained: bool):
     weights_enum = getattr(models, weights_attr)
     return weights_enum.DEFAULT
 
+def _remap_conv1_weights(old_weight: torch.Tensor, in_channels: int) -> torch.Tensor:
+    """Project RGB conv1 weights to a requested input-channel size."""
+    if in_channels == 1:
+        return old_weight.mean(dim=1, keepdim=True)
+
+    if in_channels < 3:
+        return old_weight[:, :in_channels, :, :]
+
+    repeats = math.ceil(in_channels / old_weight.shape[1])
+    expanded = old_weight.repeat(1, repeats, 1, 1)
+    return expanded[:, :in_channels, :, :]
+
 
 def _adapt_input_channels(model: nn.Module, in_channels: int) -> None:
     """Patch the first convolution for non-RGB input channels."""
@@ -48,7 +62,7 @@ def _adapt_input_channels(model: nn.Module, in_channels: int) -> None:
     if not isinstance(conv1, nn.Conv2d):
         raise ModelFactoryError("Cannot adapt input channels: conv1 is not a Conv2d layer.")
 
-    model.conv1 = nn.Conv2d(
+    replacement = nn.Conv2d(
         in_channels,
         conv1.out_channels,
         kernel_size=cast(tuple[int, int], conv1.kernel_size),
@@ -57,6 +71,12 @@ def _adapt_input_channels(model: nn.Module, in_channels: int) -> None:
         bias=conv1.bias is not None,
     )
 
+    with torch.no_grad():
+        replacement.weight.copy_(_remap_conv1_weights(conv1.weight, in_channels))
+        if conv1.bias is not None and replacement.bias is not None:
+            replacement.bias.copy_(conv1.bias)
+
+    model.conv1 = replacement
 
 def _replace_classifier(model: nn.Module, num_classes: int, dropout: float) -> None:
     """Replace final fully-connected layer with a task-specific classifier head."""

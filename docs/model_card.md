@@ -16,8 +16,8 @@ For each backbone, the final fully connected classifier is replaced so the outpu
 
 ## Input Channels
 
-The factory supports configurable input channels. For non-RGB data (`in_channels != 3`), the first convolution is replaced to accept the requested number of channels.
+The factory supports configurable input channels. For non-RGB data (`in_channels != 3`), the first convolution is replaced and weights are remapped from the original RGB kernels (mean for 1 channel, slice for <3 channels, repeat for >3 channels). This preserves pretrained conv1 information when `pretrained=True`.
 
 ## Verification
 
-Unit tests validate output tensor shapes for dummy batches for supported ResNet variants.
+Unit tests validate output tensor shapes for dummy batches and verify conv1 remapping behavior during input-channel adaptation.

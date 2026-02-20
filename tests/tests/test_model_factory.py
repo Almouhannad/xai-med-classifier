@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 import torch
+from torchvision import models
 
-from xaimed.models.factory import ModelFactoryError, build_model
-
+from xaimed.models.factory import ModelFactoryError, _adapt_input_channels, build_model
 
 @pytest.mark.parametrize("model_name", ["resnet18", "resnet50"])
 def test_build_model_resnet_output_shape(model_name):
@@ -23,6 +23,24 @@ def test_build_model_supports_custom_input_channels():
     output = model(batch)
 
     assert output.shape == (2, 5)
+
+def test_adapt_input_channels_preserves_conv1_information_for_grayscale():
+    model = models.resnet18(weights=None)
+    original_weight = model.conv1.weight.detach().clone()
+
+    _adapt_input_channels(model, in_channels=1)
+
+    expected = original_weight.mean(dim=1, keepdim=True)
+    assert torch.allclose(model.conv1.weight, expected)
+
+def test_adapt_input_channels_repeats_conv1_weights_for_extra_channels():
+    model = models.resnet18(weights=None)
+    original_weight = model.conv1.weight.detach().clone()
+
+    _adapt_input_channels(model, in_channels=5)
+
+    expected = torch.cat([original_weight, original_weight[:, :2, :, :]], dim=1)
+    assert torch.allclose(model.conv1.weight, expected)
 
 
 def test_build_model_rejects_unknown_model_name():

@@ -53,7 +53,7 @@ Current support:
 - `resnet50`
 - `resnet101`
 
-The factory automatically replaces the classifier head to match `num_classes` and can adapt the first convolution for non-RGB inputs (`in_channels != 3`).
+The factory automatically replaces the classifier head to match `num_classes` and can adapt the first convolution for non-RGB inputs (`in_channels != 3`). During channel adaptation, conv1 weights are remapped (mean-to-1ch, slice for fewer channels, repeat for extra channels) so pretrained signal is preserved instead of reinitialized.
 
 
 ## Project Overview
