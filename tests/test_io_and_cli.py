@@ -67,10 +67,16 @@ def test_cli_train_command(monkeypatch, capsys):
     assert "Last checkpoint: last.pt" in out
 
 def test_cli_eval_command(monkeypatch, capsys):
+    class _FailureGallery:
+        csv_path = "failure_gallery_selection.csv"
+        high_conf_wrong_grid_path = "high_confidence_wrongs_grid.png"
+        low_conf_correct_grid_path = "low_confidence_corrects_grid.png"
+
     class _EvalResult:
         metrics_path = "metrics.json"
         confusion_matrix_path = "cm.png"
         metrics = {"accuracy": 0.5, "macro_f1": 0.4}
+        failure_gallery = _FailureGallery()
 
     def _fake_run_evaluation(config):
         assert config == {"eval": {"split": "val"}}
@@ -86,6 +92,7 @@ def test_cli_eval_command(monkeypatch, capsys):
     assert "Confusion matrix saved: cm.png" in out
     assert "Accuracy: 0.5000" in out
     assert "Macro F1: 0.4000" in out
+    assert "Failure gallery CSV saved: failure_gallery_selection.csv" in out
 
 
 def test_cli_report_command(monkeypatch, capsys):

@@ -39,6 +39,7 @@ The evaluation pipeline is available via `xaimed eval` and `make eval-smoke`.
 - Rebuilds the configured dataloader split (default: `val`).
 - Computes aggregate metrics (`accuracy`, `macro_f1`, `num_samples`).
 - Saves `metrics.json` and an annotated `confusion_matrix.png` in `eval.output_dir`.
+- Exports failure-analysis artifacts: `failure_gallery_selection.csv`, `high_confidence_wrongs_grid.png`, and `low_confidence_corrects_grid.png`.
 
 Smoke defaults (in `configs/experiments/quick_smoke.yaml`):
 

@@ -12,6 +12,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from xaimed.models.factory import build_model
+from xaimed.reporting.make_failure_gallery import FailureGalleryArtifacts, build_failure_gallery
 from xaimed.train.loops import _prepare_batch
 from xaimed.train.train import build_dataloaders_from_config
 from xaimed.utils.metrics import (
@@ -29,6 +30,7 @@ class EvalResult:
     metrics: dict[str, float | int | str]
     metrics_path: Path
     confusion_matrix_path: Path
+    failure_gallery: FailureGalleryArtifacts
 
 
 @torch.no_grad()
@@ -36,24 +38,37 @@ def _collect_predictions(
     model: nn.Module,
     dataloader: DataLoader,
     device: torch.device,
-) -> tuple[torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     model.eval()
 
     all_targets: list[torch.Tensor] = []
     all_preds: list[torch.Tensor] = []
+    all_confidences: list[torch.Tensor] = []
+    all_images: list[torch.Tensor] = []
 
     for batch in dataloader:
         inputs, targets = _prepare_batch(batch, device)
         logits = model(inputs)
-        preds = logits.argmax(dim=1)
+        probabilities = torch.softmax(logits, dim=1)
+        confidences, preds = probabilities.max(dim=1)
 
         all_targets.append(targets.detach().cpu())
         all_preds.append(preds.detach().cpu())
+        all_confidences.append(confidences.detach().cpu())
+        all_images.append(inputs.detach().cpu())
 
     if not all_targets:
-        return torch.empty(0, dtype=torch.long), torch.empty(0, dtype=torch.long)
+        empty_long = torch.empty(0, dtype=torch.long)
+        empty_float = torch.empty(0, dtype=torch.float32)
+        empty_images = torch.empty(0, 3, 1, 1, dtype=torch.float32)
+        return empty_long, empty_long, empty_float, empty_images
 
-    return torch.cat(all_targets, dim=0), torch.cat(all_preds, dim=0)
+    return (
+        torch.cat(all_targets, dim=0),
+        torch.cat(all_preds, dim=0),
+        torch.cat(all_confidences, dim=0),
+        torch.cat(all_images, dim=0),
+    )
 
 
 def run_evaluation(config: dict[str, Any]) -> EvalResult:
@@ -84,7 +99,7 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
     checkpoint = torch.load(checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint["model_state_dict"])
 
-    targets, predictions = _collect_predictions(model, dataloaders[split], device)
+    targets, predictions, confidences, images = _collect_predictions(model, dataloaders[split], device)
     if targets.numel() == 0:
         raise ValueError(f"No samples found in split '{split}'.")
 
@@ -101,6 +116,15 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
     metrics_path = output_dir / "metrics.json"
     confusion_matrix_path = output_dir / "confusion_matrix.png"
 
+    failure_gallery = build_failure_gallery(
+        output_dir=output_dir,
+        images=images,
+        targets=targets,
+        predictions=predictions,
+        confidences=confidences,
+        top_k=int(eval_cfg.get("failure_gallery_top_k", 16)),
+    )
+
     metrics_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     save_confusion_matrix_plot(matrix, confusion_matrix_path)
 
@@ -108,4 +132,5 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
         metrics=metrics,
         metrics_path=metrics_path,
         confusion_matrix_path=confusion_matrix_path,
+        failure_gallery=failure_gallery,
     )

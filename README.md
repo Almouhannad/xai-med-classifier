@@ -101,6 +101,8 @@ python -m xaimed.cli --config configs/experiments/quick_smoke.yaml eval
 Outputs are written under the configured `eval.output_dir` and include:
 - `metrics.json` with `accuracy`, `macro_f1`, sample count, and split.
 - `confusion_matrix.png` containing an annotated confusion matrix heatmap.
+- `failure_gallery_selection.csv` with two ranked groups: high-confidence wrong predictions and low-confidence correct predictions.
+- `high_confidence_wrongs_grid.png` and `low_confidence_corrects_grid.png` for visual failure/success triage.
 
 The smoke command `make eval-smoke` reads `configs/experiments/quick_smoke.yaml` and writes artifacts to `artifacts/eval/quick_smoke/`.
 

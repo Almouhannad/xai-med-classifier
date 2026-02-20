@@ -80,6 +80,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Confusion matrix saved: {eval_result.confusion_matrix_path}")
         print(f"Accuracy: {float(eval_result.metrics['accuracy']):.4f}")
         print(f"Macro F1: {float(eval_result.metrics['macro_f1']):.4f}")
+        print(f"Failure gallery CSV saved: {eval_result.failure_gallery.csv_path}")
+        print(f"High-confidence wrong grid saved: {eval_result.failure_gallery.high_conf_wrong_grid_path}")
+        print(f"Low-confidence correct grid saved: {eval_result.failure_gallery.low_conf_correct_grid_path}")
         return 0
 
     if args.command == "report":
