@@ -24,7 +24,7 @@ A high-performance classification pipeline for medical imaging using **MedMNIST*
    make eval-smoke
    ```
 
-5. **Generate Explanations**:
+5. **Generate Explanations (Grad-CAM overlays)**:
    ```bash
    make explain-smoke
    ```
@@ -105,6 +105,16 @@ Outputs are written under the configured `eval.output_dir` and include:
 - `high_confidence_wrongs_grid.png` and `low_confidence_corrects_grid.png` for visual failure/success triage.
 
 The smoke command `make eval-smoke` reads `configs/experiments/quick_smoke.yaml` and writes artifacts to `artifacts/eval/quick_smoke/`.
+
+## Explainability (Grad-CAM)
+
+Generate Grad-CAM overlays from a trained checkpoint:
+
+```bash
+python -m xaimed.cli --config configs/experiments/quick_smoke.yaml explain
+```
+
+Explain artifacts are written to the configured `explain.output_dir` (default quick smoke: `artifacts/explain/quick_smoke/`) as `sample_*_gradcam.png` files.
 
 ## Project Overview
 

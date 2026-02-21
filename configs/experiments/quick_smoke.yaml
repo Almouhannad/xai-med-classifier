@@ -29,3 +29,16 @@ eval:
 
 report:
   output_dir: artifacts/report/quick_smoke
+
+explain:
+  split: val
+  checkpoint_path: artifacts/checkpoints/quick_smoke/best.pt
+  output_dir: artifacts/explain/quick_smoke
+  max_samples: 8
+  device: cpu
+  # Try layer2 first. layer3 is coarser but more semantic.
+  target_layer: layer2
+  # Visualization settings
+  overlay_alpha: 0.55
+  save_raw_cam: true
+  save_panel: true

@@ -69,7 +69,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     if args.command == "explain":
-        print("Explain command is scaffolded and will be expanded in a later task.")
+        from xaimed.xai.explain import run_explain
+
+        explain_result = run_explain(config)
+        print(f"Explain artifacts directory: {explain_result.output_dir}")
+        for path in explain_result.overlay_paths:
+            print(f"Grad-CAM overlay saved: {path}")
         return 0
 
     if args.command == "eval":

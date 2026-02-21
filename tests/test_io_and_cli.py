@@ -110,3 +110,24 @@ def test_cli_report_command(monkeypatch, capsys):
     assert result == 0
     assert called["output_dir"] == "artifacts/report"
     assert "Report scaffold saved: artifacts/report/README.md" in out
+
+def test_cli_explain_command(monkeypatch, capsys):
+    class _ExplainResult:
+        output_dir = "artifacts/explain/test"
+        overlay_paths = [
+            "artifacts/explain/test/sample_000_t0_p0_gradcam.png",
+            "artifacts/explain/test/sample_001_t1_p0_gradcam.png",
+        ]
+
+    def _fake_run_explain(config):
+        assert config == {"explain": {"max_samples": 2}}
+        return _ExplainResult()
+
+    monkeypatch.setattr("xaimed.xai.explain.run_explain", _fake_run_explain)
+
+    result = main(["--config", "tests/fixtures/explain_config.yaml", "explain"])
+
+    out = capsys.readouterr().out
+    assert result == 0
+    assert "Explain artifacts directory: artifacts/explain/test" in out
+    assert "Grad-CAM overlay saved: artifacts/explain/test/sample_000_t0_p0_gradcam.png" in out

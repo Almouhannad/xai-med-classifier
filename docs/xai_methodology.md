@@ -1,14 +1,14 @@
-# XAI Methodology (Scaffold)
+# XAI Methodology
 
-This repository reserves XAI modules for Grad-CAM, Integrated Gradients, and sanity checks under `src/xaimed/xai/`.
+This repository implements Grad-CAM for CNN-style image classifiers under `src/xaimed/xai/gradcam.py` and exposes explanation generation via `xaimed explain`.
 
 Current status:
 
-- Public APIs exist and are intentionally scaffolded.
-- CLI wiring (`xaimed explain`) is in place and returns a scaffold message.
-- Future tasks will implement attribution generation and artifact persistence.
+- **Grad-CAM**: implemented and used to generate attribution overlays for sample images.
+- **CLI explain workflow**: loads a trained checkpoint, runs Grad-CAM on a configured split, and saves per-sample overlays under `artifacts/explain/...`.
+- **Integrated Gradients / sanity checks**: scaffolding remains for follow-up tasks.
 
-This scaffold keeps interfaces stable while incremental work implement each method with tests.
+The explain pipeline writes overlays named like `sample_000_t0_p1_gradcam.png` where `t` is target class and `p` is predicted class.
 
 ## Error Analysis Gallery
 
