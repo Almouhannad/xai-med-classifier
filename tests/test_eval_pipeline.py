@@ -22,7 +22,18 @@ class TinyModel(nn.Module):
 def test_run_evaluation_writes_metrics_and_confusion_matrix(tmp_path, monkeypatch):
     model = TinyModel()
     checkpoint_path = tmp_path / "best.pt"
-    torch.save({"model_state_dict": model.state_dict()}, checkpoint_path)
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "history": {
+                "train_loss": [1.0, 0.8],
+                "val_loss": [1.1, 0.9],
+                "train_accuracy": [0.4, 0.6],
+                "val_accuracy": [0.35, 0.55],
+            },
+        },
+        checkpoint_path,
+    )
 
     features = torch.randn(6, 3, 4, 4)
     labels = torch.tensor([0, 1, 0, 1, 0, 1], dtype=torch.long)
@@ -45,6 +56,8 @@ def test_run_evaluation_writes_metrics_and_confusion_matrix(tmp_path, monkeypatc
 
     assert result.metrics_path.exists()
     assert result.confusion_matrix_path.exists()
+    assert set(result.training_curves_paths) == {"train", "val", "test"}
+    assert all(path.exists() for path in result.training_curves_paths.values())
 
     metrics = json.loads(result.metrics_path.read_text(encoding="utf-8"))
     assert metrics["num_samples"] == 6

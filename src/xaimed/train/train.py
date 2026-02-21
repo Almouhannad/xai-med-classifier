@@ -33,6 +33,7 @@ def _checkpoint_payload(
     epoch: int,
     train_metrics: dict[str, float],
     val_metrics: dict[str, float],
+    history: dict[str, list[float]],
 ) -> dict[str, Any]:
     return {
         "epoch": epoch,
@@ -40,6 +41,7 @@ def _checkpoint_payload(
         "optimizer_state_dict": optimizer.state_dict(),
         "train_metrics": train_metrics,
         "val_metrics": val_metrics,
+        "history": history,
     }
 
 
@@ -140,14 +142,25 @@ def run_training(config: dict[str, Any]) -> TrainResult:
     last_checkpoint_path = checkpoint_dir / "last.pt"
 
     best_val_loss = float("inf")
+    history: dict[str, list[float]] = {
+        "train_loss": [],
+        "train_accuracy": [],
+        "val_loss": [],
+        "val_accuracy": [],
+    }
 
     for epoch in range(1, epochs + 1):
         train_metrics = train_one_epoch(model, dataloaders["train"], optimizer, criterion, device)
         val_metrics = validate_one_epoch(model, dataloaders["val"], criterion, device)
 
+        history["train_loss"].append(float(train_metrics["loss"]))
+        history["train_accuracy"].append(float(train_metrics["accuracy"]))
+        history["val_loss"].append(float(val_metrics["loss"]))
+        history["val_accuracy"].append(float(val_metrics["accuracy"]))
+
         print(format_epoch_metrics(epoch, train_metrics, val_metrics))
 
-        payload = _checkpoint_payload(model, optimizer, epoch, train_metrics, val_metrics)
+        payload = _checkpoint_payload(model, optimizer, epoch, train_metrics, val_metrics, history)
         save_checkpoint(last_checkpoint_path, payload)
 
         if val_metrics["loss"] < best_val_loss:

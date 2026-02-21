@@ -88,6 +88,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Failure gallery CSV saved: {eval_result.failure_gallery.csv_path}")
         print(f"High-confidence wrong grid saved: {eval_result.failure_gallery.high_conf_wrong_grid_path}")
         print(f"Low-confidence correct grid saved: {eval_result.failure_gallery.low_conf_correct_grid_path}")
+        training_curves_paths = getattr(eval_result, "training_curves_paths", {})
+        for split_name, chart_path in sorted(training_curves_paths.items()):
+            print(f"Training curves ({split_name}) saved: {chart_path}")
         return 0
 
     if args.command == "report":

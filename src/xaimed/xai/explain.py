@@ -172,10 +172,9 @@ def run_explain(config: dict[str, Any]) -> ExplainResult:
     images = torch.cat(images_batches, dim=0)[:max_samples]
     labels = torch.cat(labels_batches, dim=0)[:max_samples]
 
-    # IMPORTANT for PathMNIST + ResNet on 28x28:
-    # Use an earlier layer to avoid near-1x1 CAM maps.
-    # Good defaults: layer2 (usually best detail), layer3 (more semantic but coarser).
-    target_layer = explain_cfg.get("target_layer", "layer2")
+    # If target_layer is omitted, gradcam() auto-selects the last Conv2d layer.
+    # This keeps explain robust for tiny/custom models used in tests and downstream tasks.
+    target_layer = explain_cfg.get("target_layer")
     overlay_alpha = float(explain_cfg.get("overlay_alpha", 0.55))
     save_raw_cam = bool(explain_cfg.get("save_raw_cam", True))
     save_panel = bool(explain_cfg.get("save_panel", True))

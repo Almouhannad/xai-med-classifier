@@ -22,7 +22,7 @@ from xaimed.utils.metrics import (
     confusion_matrix,
     macro_f1_from_confusion_matrix,
 )
-from xaimed.utils.viz import save_confusion_matrix_plot
+from xaimed.utils.viz import save_confusion_matrix_plot, save_metric_history_plot
 
 
 @dataclass
@@ -32,6 +32,7 @@ class EvalResult:
     metrics: dict[str, float | int | str]
     metrics_path: Path
     confusion_matrix_path: Path
+    training_curves_paths: dict[str, Path]
     failure_gallery: FailureGalleryArtifacts
 
 
@@ -74,7 +75,7 @@ def _collect_predictions(
 
 
 def run_evaluation(config: dict[str, Any]) -> EvalResult:
-    """Evaluate a trained checkpoint and generate metrics + confusion matrix plot."""
+    """Evaluate a trained checkpoint and generate metrics + split-wide training charts."""
     model_cfg = config.get("model", {})
     train_cfg = config.get("train", {})
     eval_cfg = config.get("eval", {})
@@ -104,6 +105,8 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
     checkpoint = torch.load(checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint["model_state_dict"])
 
+    history = checkpoint.get("history", {})
+
     targets, predictions, confidences, images = _collect_predictions(model, dataloaders[split], device)
     if targets.numel() == 0:
         raise ValueError(f"No samples found in split '{split}'.")
@@ -122,6 +125,13 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
     metrics_path = output_dir / "metrics.json"
     confusion_matrix_path = output_dir / "confusion_matrix.png"
 
+    chart_splits = [str(name) for name in eval_cfg.get("chart_splits", ["train", "val", "test"])]
+    training_curves_paths: dict[str, Path] = {}
+    for split_name in chart_splits:
+        chart_path = output_dir / f"training_curves_{split_name}.png"
+        save_metric_history_plot(history, chart_path, split_name=split_name)
+        training_curves_paths[split_name] = chart_path
+
     failure_gallery = build_failure_gallery(
         output_dir=output_dir,
         images=images,
@@ -138,5 +148,6 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
         metrics=metrics,
         metrics_path=metrics_path,
         confusion_matrix_path=confusion_matrix_path,
+        training_curves_paths=training_curves_paths,
         failure_gallery=failure_gallery,
     )

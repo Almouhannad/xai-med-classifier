@@ -52,3 +52,9 @@ def test_run_training_saves_best_and_last_checkpoint(tmp_path):
     saved = torch.load(result.last_checkpoint_path, map_location="cpu")
     assert "model_state_dict" in saved
     assert saved["epoch"] == 1
+    assert saved["history"] == {
+        "train_loss": [saved["train_metrics"]["loss"]],
+        "train_accuracy": [saved["train_metrics"]["accuracy"]],
+        "val_loss": [saved["val_metrics"]["loss"]],
+        "val_accuracy": [saved["val_metrics"]["accuracy"]],
+    }

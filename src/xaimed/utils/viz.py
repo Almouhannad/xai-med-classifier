@@ -106,3 +106,93 @@ def save_image_grid(
         draw.text((x + 4, y + 4), f"#{sample_idx}", fill="yellow")
 
     canvas.save(out_path)
+
+
+def save_metric_history_plot(
+    history: dict[str, list[float]],
+    out_path: Path,
+    split_name: str,
+) -> None:
+    """Save a compact per-split training history chart with loss and accuracy trends."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    train_loss = history.get("train_loss", [])
+    val_loss = history.get("val_loss", [])
+    train_accuracy = history.get("train_accuracy", [])
+    val_accuracy = history.get("val_accuracy", [])
+
+    epochs = max(len(train_loss), len(val_loss), len(train_accuracy), len(val_accuracy))
+    chart_width = max(480, 72 * max(1, epochs))
+    panel_height = 220
+    margin_left = 52
+    margin_right = 24
+    margin_top = 24
+    margin_bottom = 34
+    panel_gap = 24
+
+    width = chart_width
+    height = panel_height * 2 + panel_gap + margin_top * 2 + margin_bottom * 2
+    image = Image.new("RGB", (width, height), color="white")
+    draw = ImageDraw.Draw(image)
+
+    def draw_panel(y_offset: int, title: str, train: list[float], val: list[float], y_min: float, y_max: float) -> None:
+        x0 = margin_left
+        y0 = y_offset + margin_top
+        x1 = width - margin_right
+        y1 = y_offset + panel_height - margin_bottom
+        draw.rectangle((x0, y0, x1, y1), outline="black", width=1)
+        draw.text((x0, y_offset + 2), title, fill="black")
+
+        if epochs <= 0:
+            draw.text((x0 + 8, y0 + 8), "No history data", fill="black")
+            return
+
+        draw.text((8, y0 - 6), f"{y_max:.3f}", fill="black")
+        draw.text((8, y1 - 10), f"{y_min:.3f}", fill="black")
+
+        def project(idx: int, value: float) -> tuple[float, float]:
+            x = x0 if epochs == 1 else x0 + (idx / (epochs - 1)) * (x1 - x0)
+            denom = max(y_max - y_min, 1e-8)
+            y = y1 - ((value - y_min) / denom) * (y1 - y0)
+            return x, y
+
+        def draw_series(values: list[float], color: tuple[int, int, int]) -> None:
+            if not values:
+                return
+            points = [project(i, float(values[i])) for i in range(len(values))]
+            if len(points) == 1:
+                px, py = points[0]
+                draw.ellipse((px - 2, py - 2, px + 2, py + 2), fill=color)
+                return
+            draw.line(points, fill=color, width=2)
+            for px, py in points:
+                draw.ellipse((px - 2, py - 2, px + 2, py + 2), fill=color)
+
+        draw_series(train, (0, 102, 204))
+        draw_series(val, (204, 102, 0))
+
+        draw.rectangle((x0, y1 + 8, x0 + 14, y1 + 20), fill=(0, 102, 204))
+        draw.text((x0 + 20, y1 + 8), "train", fill="black")
+        draw.rectangle((x0 + 96, y1 + 8, x0 + 110, y1 + 20), fill=(204, 102, 0))
+        draw.text((x0 + 116, y1 + 8), "val", fill="black")
+
+    all_loss = [float(v) for v in (train_loss + val_loss)]
+    loss_min = min(all_loss) if all_loss else 0.0
+    loss_max = max(all_loss) if all_loss else 1.0
+    if abs(loss_max - loss_min) < 1e-8:
+        loss_max = loss_min + 1.0
+
+    all_acc = [float(v) for v in (train_accuracy + val_accuracy)]
+    acc_min = min(all_acc) if all_acc else 0.0
+    acc_max = max(all_acc) if all_acc else 1.0
+    acc_min = min(acc_min, 0.0)
+    acc_max = max(acc_max, 1.0)
+
+    header_height = 32
+
+    draw.text((margin_left, 6), f"Training Curves ({split_name})", fill="black")
+
+    draw_panel(header_height, "Loss", train_loss, val_loss, loss_min, loss_max)
+    draw_panel(header_height + panel_height + panel_gap,
+            "Accuracy", train_accuracy, val_accuracy, acc_min, acc_max)
+    image.save(out_path)
