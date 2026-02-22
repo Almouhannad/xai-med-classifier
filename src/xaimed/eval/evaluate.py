@@ -32,7 +32,7 @@ class EvalResult:
     metrics: dict[str, float | int | str]
     metrics_path: Path
     confusion_matrix_path: Path
-    training_curves_paths: dict[str, Path]
+    training_curves_path: Path
     failure_gallery: FailureGalleryArtifacts
 
 
@@ -125,12 +125,8 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
     metrics_path = output_dir / "metrics.json"
     confusion_matrix_path = output_dir / "confusion_matrix.png"
 
-    chart_splits = [str(name) for name in eval_cfg.get("chart_splits", ["train", "val", "test"])]
-    training_curves_paths: dict[str, Path] = {}
-    for split_name in chart_splits:
-        chart_path = output_dir / f"training_curves_{split_name}.png"
-        save_metric_history_plot(history, chart_path, split_name=split_name)
-        training_curves_paths[split_name] = chart_path
+    training_curves_path = output_dir / "training_curves.png"
+    save_metric_history_plot(history, training_curves_path, split_name="train/val")
 
     failure_gallery = build_failure_gallery(
         output_dir=output_dir,
@@ -148,6 +144,6 @@ def run_evaluation(config: dict[str, Any]) -> EvalResult:
         metrics=metrics,
         metrics_path=metrics_path,
         confusion_matrix_path=confusion_matrix_path,
-        training_curves_paths=training_curves_paths,
+        training_curves_path=training_curves_path,
         failure_gallery=failure_gallery,
     )

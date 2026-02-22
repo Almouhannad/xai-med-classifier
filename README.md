@@ -84,8 +84,14 @@ Training is implemented in modular loops under `src/xaimed/train/`:
 
 Checkpoints are saved as:
 
-- `best.pt` (lowest validation loss)
+- `best.pt` (best monitored validation metric configured by early-stopping monitor/mode)
 - `last.pt` (latest epoch)
+
+Training hyperparameters are configurable from `train` in YAML, including:
+- optimizer: `adam`, `adamw`, `sgd`
+- schedulers: `none`, `StepLR`, `CosineAnnealingLR`, `ReduceLROnPlateau` (with `lr_plateau_monitor` = `val_loss`/`val_accuracy`)
+- gradient clipping: `grad_clip_norm`
+- early stopping: `early_stopping`, `early_stopping_patience`, `early_stopping_min_delta`, `early_stopping_monitor` (`val_loss` or `val_accuracy`), and `early_stopping_mode` (`min`/`max`)
 
 The smoke config (`configs/experiments/quick_smoke.yaml`) uses CPU + synthetic data so `make train-smoke` runs reliably in constrained environments.
 
@@ -101,6 +107,7 @@ python -m xaimed.cli --config configs/experiments/quick_smoke.yaml eval
 Outputs are written under the configured `eval.output_dir` and include:
 - `metrics.json` with `accuracy`, `macro_f1`, `ece`, sample count, and split.
 - `confusion_matrix.png` containing an annotated confusion matrix heatmap.
+- `training_curves.png` containing train/validation loss and accuracy across epochs.
 - `failure_gallery_selection.csv` with two ranked groups: high-confidence wrong predictions and low-confidence correct predictions.
 - `high_confidence_wrongs_grid.png` and `low_confidence_corrects_grid.png` for visual failure/success triage.
 

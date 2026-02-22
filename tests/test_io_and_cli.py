@@ -52,9 +52,15 @@ def test_cli_train_command(monkeypatch, capsys):
     class _Result:
         best_checkpoint_path = "best.pt"
         last_checkpoint_path = "last.pt"
+        best_epoch = 1
+        best_score = 0.123456
+        best_monitor = "val_loss"
+        best_mode = "min"
+        epochs_ran = 1
+        early_stopped = False
 
     def _fake_run_training(config):
-        assert config == {"train": {"epochs": 1}}
+        assert config == {"train": {"epochs": 1, "early_stopping": False}}
         return _Result()
 
     monkeypatch.setattr("xaimed.train.run_training", _fake_run_training)
@@ -65,6 +71,10 @@ def test_cli_train_command(monkeypatch, capsys):
     assert result == 0
     assert "Best checkpoint: best.pt" in out
     assert "Last checkpoint: last.pt" in out
+    assert "Best epoch: 1" in out
+    assert "Best score (val_loss, min): 0.123456" in out
+    assert "Epochs ran: 1" in out
+    assert "Early stopped: False" in out
 
 def test_cli_eval_command(monkeypatch, capsys):
     class _FailureGallery:
@@ -75,6 +85,7 @@ def test_cli_eval_command(monkeypatch, capsys):
     class _EvalResult:
         metrics_path = "metrics.json"
         confusion_matrix_path = "cm.png"
+        training_curves_path = "training_curves.png"
         metrics = {"accuracy": 0.5, "macro_f1": 0.4}
         failure_gallery = _FailureGallery()
 
@@ -93,6 +104,7 @@ def test_cli_eval_command(monkeypatch, capsys):
     assert "Accuracy: 0.5000" in out
     assert "Macro F1: 0.4000" in out
     assert "Failure gallery CSV saved: failure_gallery_selection.csv" in out
+    assert "Training curves saved: training_curves.png" in out
 
 
 def test_cli_report_command(monkeypatch, capsys):

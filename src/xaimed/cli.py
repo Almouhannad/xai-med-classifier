@@ -66,6 +66,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         train_result = run_training(config)
         print(f"Best checkpoint: {train_result.best_checkpoint_path}")
         print(f"Last checkpoint: {train_result.last_checkpoint_path}")
+        print(f"Best epoch: {train_result.best_epoch}")
+        print(f"Best score ({train_result.best_monitor}, {train_result.best_mode}): {train_result.best_score:.6f}")
+        print(f"Epochs ran: {train_result.epochs_ran}")
+        print(f"Early stopped: {train_result.early_stopped}")
         return 0
 
     if args.command == "explain":
@@ -88,9 +92,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Failure gallery CSV saved: {eval_result.failure_gallery.csv_path}")
         print(f"High-confidence wrong grid saved: {eval_result.failure_gallery.high_conf_wrong_grid_path}")
         print(f"Low-confidence correct grid saved: {eval_result.failure_gallery.low_conf_correct_grid_path}")
-        training_curves_paths = getattr(eval_result, "training_curves_paths", {})
-        for split_name, chart_path in sorted(training_curves_paths.items()):
-            print(f"Training curves ({split_name}) saved: {chart_path}")
+        training_curves_path = getattr(eval_result, "training_curves_path", None)
+        if training_curves_path is not None:
+            print(f"Training curves saved: {training_curves_path}")
         return 0
 
     if args.command == "report":

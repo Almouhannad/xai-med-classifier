@@ -34,6 +34,7 @@ def train_one_epoch(
     optimizer: torch.optim.Optimizer,
     criterion: nn.Module,
     device: torch.device,
+    grad_clip_norm: float = 0.0,
 ) -> dict[str, float]:
     """Run one training epoch and return aggregate metrics."""
     model.train()
@@ -49,6 +50,8 @@ def train_one_epoch(
         logits = model(inputs)
         loss = criterion(logits, targets)
         loss.backward()
+        if grad_clip_norm > 0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
         optimizer.step()
 
         running_loss += float(loss.item())

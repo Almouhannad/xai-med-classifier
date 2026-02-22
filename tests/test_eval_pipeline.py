@@ -56,8 +56,7 @@ def test_run_evaluation_writes_metrics_and_confusion_matrix(tmp_path, monkeypatc
 
     assert result.metrics_path.exists()
     assert result.confusion_matrix_path.exists()
-    assert set(result.training_curves_paths) == {"train", "val", "test"}
-    assert all(path.exists() for path in result.training_curves_paths.values())
+    assert result.training_curves_path.exists()
 
     metrics = json.loads(result.metrics_path.read_text(encoding="utf-8"))
     assert metrics["num_samples"] == 6

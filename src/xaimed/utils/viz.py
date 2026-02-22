@@ -113,7 +113,7 @@ def save_metric_history_plot(
     out_path: Path,
     split_name: str,
 ) -> None:
-    """Save a compact per-split training history chart with loss and accuracy trends."""
+    """Save a compact training history chart with train/val loss and accuracy trends."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     train_loss = history.get("train_loss", [])

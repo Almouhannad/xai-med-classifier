@@ -17,9 +17,21 @@ To reduce run-to-run variance, training/evaluation now seed Python, NumPy, and T
 Each run writes:
 
 - `last.pt`: checkpoint from the most recent epoch.
-- `best.pt`: checkpoint with the lowest validation loss observed so far.
+- `best.pt`: checkpoint with the best monitored validation score (based on `early_stopping_monitor` + `early_stopping_mode`).
 
-Both files contain model/optimizer state dicts, epoch index, and train/validation metrics.
+Both files contain model/optimizer state dicts, epoch index, train/validation metrics, history, and scheduler state (when a scheduler is enabled).
+
+
+## Tunable Training Hyperparameters
+
+The `train` config supports optimization and stopping controls:
+
+- Optimizer: `optimizer` (`adam`, `adamw`, `sgd`) with `lr`, `weight_decay`, and `momentum`/`nesterov` for SGD.
+- LR scheduler: `lr_scheduler` (`none`, `StepLR`, `CosineAnnealingLR`, `ReduceLROnPlateau`) and its related parameters (`lr_step_size`, `lr_gamma`, `lr_t_max`, `lr_eta_min`, `lr_plateau_*`) including `lr_plateau_monitor` (`val_loss`/`val_accuracy`).
+- Gradient clipping: `grad_clip_norm` to clip gradient norm each training step.
+- Early stopping: `early_stopping`, `early_stopping_patience`, `early_stopping_min_delta`, `early_stopping_monitor` (`val_loss`/`val_accuracy`), and `early_stopping_mode` (`min`/`max`).
+
+The CLI now prints `best_epoch`, `epochs_ran`, and whether early stopping triggered at the end of training.
 
 ## Smoke Training
 
@@ -40,7 +52,7 @@ The evaluation pipeline is available via `xaimed eval` and `make eval-smoke`.
 - Loads the trained checkpoint (default: `train.checkpoint_dir/best.pt`).
 - Rebuilds the configured dataloader split (default: `val`).
 - Computes aggregate metrics (`accuracy`, `macro_f1`, `ece`, `num_samples`).
-- Saves `metrics.json` and an annotated `confusion_matrix.png` in `eval.output_dir`.
+- Saves `metrics.json`, `confusion_matrix.png`, and `training_curves.png` in `eval.output_dir`.
 - Exports failure-analysis artifacts: `failure_gallery_selection.csv`, `high_confidence_wrongs_grid.png`, and `low_confidence_corrects_grid.png`.
 
 Smoke defaults (in `configs/experiments/quick_smoke.yaml`):
